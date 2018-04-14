@@ -1,0 +1,108 @@
+2.
+$ git checkout -b 'quote' 'v3.0'
+
+3. 
+$ patch -p1 < quote-3.0-patch.txt 
+patching file src/cmp.c
+patching file src/diff.c
+patching file src/diff3.c
+patching file src/dir.c
+patching file src/sdiff.c
+patching file src/util.c
+
+4.
+I learned by google
+
+5. 
+$ emacs
+(emacs) C-x 4 a
+
+Add relevant message to it.
+
+6.
+$ git commit -aF ChangeLog
+
+7.
+$ git format-patch -1 --stdout > formatted-patch.txt
+
+8.
+Verify my partner's patch 
+
+Rename his patch to bob-formatted-patch.txt
+
+Create a new branch
+$ git checkout -b 'partner' 'v3.0'
+$ git am bob-formatted-patch.txt
+Applying: 2018-03-16 Guorui Xiao <classgxi@lnxsrv09.seas.ucla.edu>
+.git/rebase-apply/patch:30: trailing whitespace.
+ 
+.git/rebase-apply/patch:33: space before tab in indent.
+ 	 || (e == LONGINT_INVALID_SUFFIX_CHAR && **argptr == delimiter))
+.git/rebase-apply/patch:41: space before tab in indent.
+ 	  _("SKIP values may be followed by the following multiplicative suffixes:\n\
+.git/rebase-apply/patch:46: space before tab in indent.
+ 	  _("Exit status is 0 if inputs are the same, 1 if different, 2 if trouble."));
+.git/rebase-apply/patch:50: space before tab in indent.
+ 	{
+warning: squelched 74 whitespace errors
+warning: 79 lines add whitespace errors.
+ 
+Building the resulting system, checking that it works with “make check”.
+$ ./bootstrap
+$ ./configure
+$ make
+$ make check
+$ make distdir
+
+
+Then I ran:
+./src/diff . -
+and
+./src/diff --help
+
+No ` found. So it works.
+
+
+9. Verify that your ChangeLog entry works
+$ make distdir
+
+$ echo ?
+0
+
+$ ls -lt
+total 2456
+drwxr-xr-x 12 classsmj class   4096 Mar 16 19:49 diffutils-3.0.1-34ce
+
+$ cd diffutils-3.0.1-34ce
+$ vi Changelog
+2018-03-16  Guorui Xiao  <classgxi@lnxsrv09.seas.ucla.edu>
+
+        2018-03-16 Guorui Xiao <classgxi@lnxsrv09.seas.ucla.edu>
+                * quote-3.0-patch.txt:
+
+
+
+10. 
+$ mkdir eggert-emacs
+$ git clone ~eggert/src/gnu/emacs eggert-emacs/
+$ cd eggert-emacs/
+$ gitk
+Error in startup script: no display name and no $DISPLAY environment variable
+
+So I logged out and sign in with -XY.
+$ ssh classsmj@lnxsrv07.seas.ucla.edu
+$ gitk
+
+the newest merge that is not newer than 2015-01-25:
+
+Author: Joakim Verona <joakim@verona.se>  2015-01-25 12:19:27
+Committer: Joakim Verona <joakim@verona.se>  2015-01-25 12:19:27
+Parent: e5087278b9bcab5847ce63d80c0d74c27f50e719 (merge master)
+Parent: a3689d3c661fe36df971c875760f8d500b5ae994 (Count MANY function args more reliably)
+Child:  c251ec96117a847799a61338e7648da8a4ade9e0 (Fix visual glitch during webkit resizing)
+Branches: master, remotes/origin/emacs-26, remotes/origin/master
+Follows: emacs-24.4
+Precedes: emacs-25.0.90
+
+    Merge branch 'master' into xwidget
+

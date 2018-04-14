@@ -1,0 +1,250 @@
+1. Get a copy of the Diffutils repository
+$ git clone ~eggert/src/gnu/diffutils
+
+Get into the directory
+$ cd diffutils
+
+2. Get a log of changes
+$ git log > git-log.txt
+
+3. Generate a list of tags
+$ git tag > git-tags.txt
+
+4. Find certain commit
+$ vim git-log.txt
+In vim, I type: /maint: quote 'like this' or "
+
+Generate a patch for that commit,
+$ git format-patch -1 62ca21c8c1a5aa3488589dcb191a4ef04ae9ed4f --stdout > quote-patch.txt
+
+5. Check out version 3.0 of Diffutils
+$ git checkout -b 'hw_v3.0' 'v3.0'
+Switched to a new branch 'hw_v3.0'
+
+Check what branch I have now
+$ git branch
+* hw_v3.0
+  master
+
+6. Use the patch command to apply quote-patch.txt to version 3.0
+$ patch -p1 < quote-patch.txt
+
+can't find file to patch at input line 62
+Perhaps you used the wrong -p or --strip option?
+The text leading up to this was:
+...
+...
+2 out of 3 hunks FAILED -- saving rejects to file README.rej
+patching file README-hacking
+Hunk #1 FAILED at 19.
+1 out of 1 hunk FAILED -- saving rejects to file README-hacking.rej
+patching file TODO
+patching file cfg.mk
+Hunk #1 FAILED at 29.
+1 out of 1 hunk FAILED -- saving rejects to file cfg.mk.rej
+patching file doc/diagmeet.note
+...
+...
+File to patch: 
+Skip this patch? [y] y
+Skipping patch.
+1 out of 1 hunk ignored
+...
+...
+Hunk #10 FAILED at 876.
+Hunk #11 FAILED at 906.
+Hunk #12 FAILED at 942.
+...
+...
+1 out of 9 hunks FAILED -- saving rejects to file src/diff3.c.rej
+...
+
+7. Get an overview of what happened
+$ git status
+On branch hw_v3.0
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git checkout -- <file>..." to discard changes in working directory)
+
+	modified:   NEWS
+	modified:   README
+	modified:   TODO
+	modified:   doc/diagmeet.note
+	modified:   ms/config.bat
+	modified:   ms/config.site
+	modified:   po/en.po
+	modified:   src/analyze.c
+	modified:   src/cmp.c
+	modified:   src/context.c
+	modified:   src/diff.c
+	modified:   src/diff.h
+	modified:   src/diff3.c
+	modified:   src/dir.c
+	modified:   src/ifdef.c
+	modified:   src/io.c
+	modified:   src/sdiff.c
+	modified:   src/side.c
+	modified:   src/system.h
+	modified:   src/util.c
+	modified:   tests/help-version
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+
+	NEWS.orig
+	README-hacking.orig
+	README-hacking.rej
+	README.orig
+	README.rej
+	cfg.mk.orig
+	cfg.mk.rej
+	git-log.txt
+	git-tags.txt
+	ms/config.site.orig
+	quote-patch.txt
+	src/cmp.c.orig
+	src/context.c.orig
+	src/diff.c.orig
+	src/diff.c.rej
+	src/diff.h.orig
+	src/diff3.c.orig
+	src/diff3.c.rej
+	src/dir.c.orig
+	src/sdiff.c.orig
+	src/system.h.orig
+	src/util.c.orig
+	tests/help-version.orig
+
+8. Learn to use vc-diff, vc-revert, diff-apply-hunk, and diff-goto-source.
+I learned them by googling.
+
+9. Use Emacs to revert all the changes
+
+For all the files except for c files, I used vc-revert (C-x v u) in emacs
+$ emacs NEWS
+(emacs) C-x v u
+
+$ emacs README
+(emacs) C-x v u
+
+$ emacs TODO
+(emacs) C-x v u
+
+$ emacs doc/diagmeet.note
+(emacs) C-x v u
+
+$ emacs ms/config.bat
+(emacs) C-x v u
+
+$ emacs ms/config.site
+(emacs) C-x v u
+
+$ emacs po/en.po
+(emacs) C-x v u
+
+$ emacs src/diff.h
+(emacs) C-x v u
+
+$ emacs src/system.h
+(emacs) C-x v u
+
+$ emacs tests/help-version
+(emacs) C-x v u
+
+For all c files, I used vc-diff (C-x v =) in emacs to get the changes
+Then used (C-x o) to switch window
+Then used M-g g to go to the line 
+Then replaced the ' with `
+
+10. Examine the files src/*.c.rej
+
+Get into the src/ directory
+$ cd src
+
+list all the *.c.rej
+$ ls
+
+Then I manually check and modify diff.c and diff3.c according to diff.c.rej and diff.c.rej
+
+11. Remove all untracked files
+$ git clean -n
+Would remove #diff3.c#
+Would remove cmp.c.orig
+Would remove context.c.orig
+Would remove diff.c.orig
+Would remove diff.c.rej
+Would remove diff.h.orig
+Would remove diff3.c.orig
+Would remove diff3.c.rej
+Would remove dir.c.orig
+Would remove sdiff.c.orig
+Would remove system.h.orig
+Would remove util.c.orig
+
+$ git clean -f
+[classsmj@lnxsrv07 ~/winter18/35l/week9/diffutils/src]$ git clean -f
+Removing #diff3.c#
+Removing cmp.c.orig
+Removing context.c.orig
+Removing diff.c.orig
+Removing diff.c.rej
+Removing diff.h.orig
+Removing diff3.c.orig
+Removing diff3.c.rej
+Removing dir.c.orig
+Removing sdiff.c.orig
+Removing system.h.orig
+Removing util.c.orig
+
+12. 
+$ git status
+#	modified:   src/cmp.c
+#	modified:   src/diff.c
+#	modified:   src/diff3.c
+#	modified:   src/dir.c
+#	modified:   src/sdiff.c
+#	modified:   src/util.c
+
+$ git diff > quote-3.0-patch.txt
+
+13. Build the resulting modified version of Diffutils
+$ ./bootstrap
+$ ./configure
+$ make
+
+Then test this new modified diff running
+$ diff . -
+$ diff --help
+
+As we see, the output uses '' instead of ``.
+
+14. Sanity Test
+Make new directory
+$ cd ..
+$ mkdir diffutils-ori
+$ mkdir diffutils-3.0-patch
+$ mkdir diffutils-3.0
+
+Get an original copy of Diffutils
+$ git clone ~eggert/src/gnu/diffutils diffutils-ori
+
+Check to version 3.0
+$ git checkout 'v3.0'
+Checkout the original v3.0 code.
+
+Copy v3.0 codes to diffutils-3.0/
+$ cp -r ./src/* ../diffutils-3.0/
+
+Copy my version to diffutils-3.0-patch
+$ cd ../diffutils
+$ cp -r src/* ../diffutils-3.0-patch/
+
+Run my implementation of diff
+$ cd ..
+$ ./diffutils/src/diff -pru diffutils-3.0 diffutils-3.0-patch > quote-3.0-test.txt
+
+15.
+Compare two patches:
+diff -u quote-3.0-test.txt diffutils/quote-3.0-patch.txt
+
+All difference is related to '' and `` characters.

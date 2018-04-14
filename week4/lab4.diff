@@ -1,0 +1,29 @@
+2018-02-09  Zhibang Chen  <classsmj@lnxsrv07.seas.ucla.edu>
+
+	* timespec.h: Delete subtraction  between time string to avoid integer overflow.  Instead,
+        compare them directly and return -1, 0, and 1 if A < B, A == B, or A > B.
+
+--- timespec.h	2018-02-09 11:09:49.798080000 -0800
++++ ../../timespec.h	2018-02-09 11:08:26.040320000 -0800
+@@ -44,10 +44,17 @@
+    Assume the nanosecond components are in range, or close to it.  */
+ static inline int
+ timespec_cmp (struct timespec a, struct timespec b)
+-{ 
+-    int diff = a.tv_sec - b.tv_sec;
+-
+-    return diff ? diff : a.tv_nsec - b.tv_nsec;
++{
++    int diff;  
++  // int diff = a.tv_sec - b.tv_sec;
++    if (a.tv_sec < b.tv_sec)
++       diff = -1;
++    else if (a.tv_sec == b.tv_sec)
++       diff = 0;
++    else 
++       diff = 1;
++  // return diff ? diff : a.tv_nsec - b.tv_nsec;
++    return diff;
+ }
+ 
+ # if ! HAVE_DECL_NANOSLEEP

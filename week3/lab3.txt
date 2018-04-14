@@ -1,0 +1,192 @@
+Name: Zhibang Chen
+UID: 804783490
+
+1. 
+Grab Coreutils 7.6.
+$ wget ftp://ftp.gnu.org/gnu/coreutils/coreutils-7.6.tar.gz
+
+2. 
+Untar the file
+$ tar -xzf coreutils-7.6.tar.gz 
+
+To check whether it works, use 
+$ echo $? 
+
+Configure the package
+$ cd coreutils-7.6
+$ ./configure
+
+Compile 
+$ make
+
+Move the binary to desired place under file system
+$ make install
+But it generated error: Makefile:1460: recipe for target 'install' failed
+make: *** [install] Error 2
+
+So I configured at new directory
+$ mkdir coreutils-7.6-install
+$ cd coreutils-7.6
+$ ./configure --prefix=/u/eng/class/classsmj/winter18/35l/
+week3/coreutils-7.6-install
+
+Then compile and install
+$ make
+$ make install
+
+Check whether it works
+$ echo $?
+
+3.
+To reproduce the bug
+$ cd ..
+$ cd coreutils-7.6-install/bin
+$ ./ls -l 
+
+Right now the format is the buggy version
+-rwxr-xr-x 1 classsmj class 127695 2018-01-22 11:39 [
+-rwxr-xr-x 1 classsmj class 119390 2018-01-22 11:39 base64
+...
+
+4. 
+I manually patched the file
+$ cd ..
+$ cd ..
+$ cd coreutils-7.6/src
+$ vim ls.c
+Then I modified line 2014 and 2030
+
+5.  
+build (but do not install) the fixed version
+$ cd ..
+$ make
+
+make  all-recursive
+make[1]: Entering directory '/w/home.14/class/classsmj/winter18/
+35l/week3/coreutils-7.6'
+Making all in lib
+make[2]: Entering directory '/w/home.14/class/classsmj/winter18/
+35l/week3/coreutils-7.6/lib'
+make  all-recursive
+make[3]: Entering directory '/w/home.14/class/classsmj/winter18/
+35l/week3/coreutils-7.6/lib'
+make[4]: Entering directory '/w/home.14/class/classsmj/winter18/
+35l/week3/coreutils-7.6/lib'
+make[4]: Leaving directory '/w/home.14/class/classsmj/winter18/
+35l/week3/coreutils-7.6/lib'
+make[3]: Leaving directory '/w/home.14/class/classsmj/winter18/
+35l/week3/coreutils-7.6/lib'
+make[2]: Leaving directory '/w/home.14/class/classsmj/winter18/
+35l/week3/coreutils-7.6/lib'
+Making all in src
+make[2]: Entering directory '/w/home.14/class/classsmj/winter18/
+35l/week3/coreutils-7.6/src'
+make  all-am
+make[3]: Entering directory '/w/home.14/class/classsmj/winter18/
+35l/week3/coreutils-7.6/src'
+  CC     ls.o
+  CCLD   dir
+  CCLD   vdir
+  CCLD   ls
+make[3]: Leaving directory '/w/home.14/class/classsmj/winter18/
+35l/week3/coreutils-7.6/src'
+make[2]: Leaving directory '/w/home.14/class/classsmj/winter18/
+35l/week3/coreutils-7.6/src'
+Making all in doc
+make[2]: Entering directory '/w/home.14/class/classsmj/winter18/
+35l/week3/coreutils-7.6/doc'
+make[2]: Nothing to be done for 'all'.
+make[2]: Leaving directory '/w/home.14/class/classsmj/winter18/
+35l/week3/coreutils-7.6/doc'
+Making all in man
+make[2]: Entering directory '/w/home.14/class/classsmj/winter18/
+35l/week3/coreutils-7.6/man'
+  GEN    dir.1
+  GEN    vdir.1
+  GEN    ls.1
+make[2]: Leaving directory '/w/home.14/class/classsmj/winter18/
+35l/week3/coreutils-7.6/man'
+Making all in po
+make[2]: Entering directory '/w/home.14/class/classsmj/winter18/
+35l/week3/coreutils-7.6/po'
+make[2]: Nothing to be done for 'all'.
+make[2]: Leaving directory '/w/home.14/class/classsmj/winter18/
+35l/week3/coreutils-7.6/po'
+Making all in tests
+make[2]: Entering directory '/w/home.14/class/classsmj/winter18/
+35l/week3/coreutils-7.6/tests'
+make[2]: Nothing to be done for 'all'.
+make[2]: Leaving directory '/w/home.14/class/classsmj/winter18/
+35l/week3/coreutils-7.6/tests'
+Making all in gnulib-tests
+make[2]: Entering directory '/w/home.14/class/classsmj/winter18/
+35l/week3/coreutils-7.6/gnulib-tests'
+make  all-recursive
+make[3]: Entering directory '/w/home.14/class/classsmj/winter18/
+35l/week3/coreutils-7.6/gnulib-tests'
+make[4]: Entering directory '/w/home.14/class/classsmj/winter18/
+35l/week3/coreutils-7.6/gnulib-tests'
+make[4]: Nothing to be done for 'all-am'.
+make[4]: Leaving directory '/w/home.14/class/classsmj/winter18/
+35l/week3/coreutils-7.6/gnulib-tests'
+make[3]: Leaving directory '/w/home.14/class/classsmj/winter18/
+35l/week3/coreutils-7.6/gnulib-tests'
+make[2]: Leaving directory '/w/home.14/class/classsmj/winter18/
+35l/week3/coreutils-7.6/gnulib-tests'
+make[2]: Entering directory '/w/home.14/class/classsmj/winter18/
+35l/week3/coreutils-7.6'
+make[2]: Nothing to be done for 'all-am'.
+make[2]: Leaving directory '/w/home.14/class/classsmj/winter18/
+35l/week3/coreutils-7.6'
+make[1]: Leaving directory '/w/home.14/class/classsmj/winter18/
+35l/week3/coreutils-7.6'
+
+
+Among all the output lines, the only commons are 
+  CC     ls.o
+  CCLD   dir
+  CCLD   vdir
+  CCLD   ls
+  GEN    dir.1
+  GEN    vdir.1
+  GEN    ls.1
+Since we only changed the ls.c in src directory, only commons 
+related to ls are necessary:
+  CC     ls.o
+  CCLD   ls
+  CCLD   dir
+  CCLD   vdir
+  GEN    ls.1
+These commons either handle ls or create the object file, 
+so they are neccessary. Others are not.
+
+
+6. Now we compiled all the codes in coreutils-7.6 folders with the 
+modified codes, 
+but we leave coreutils-7.6-install the same as the buggy version.
+
+The new version fixed the bug
+$ cd ..
+$ ./coreutils-7.6/src/ls -l
+drwxr-xr-x 13 classsmj class     8192 Jan 22 11:37 coreutils-7.6
+drwxr-xr-x  5 classsmj class     4096 Jan 22 11:39 coreutils-7.6-install
+-rw-r--r--  1 classsmj class 10014650 Jan 22 11:19 coreutils-7.6.tar.gz
+
+The old version was still buggy
+$ ./coreutils-7.6-install/bin/ls -l
+$ drwxr-xr-x 13 classsmj class     8192 2018-01-22 11:37 coreutils-7.6
+$ drwxr-xr-x  5 classsmj class     4096 2018-01-22 11:39 coreutils-7.6-install
+$ -rw-r--r--  1 classsmj class 10014650 2018-01-22 11:19 coreutils-7.6.tar.gz
+
+After that, I created a file existed 10 years ago
+$ touch -t 0708031230 test.txt
+
+The new version fixed the bug
+$ ./coreutils-7.6/src/ls -l
+-rw-r--r--  1 classsmj class        0 Aug  3  2007 test.txt
+
+The old version was still buggy
+$ ./coreutils-7.6-install/bin/ls -l
+-rw-r--r--  1 classsmj class        0 2007-08-03 12:30 test.txt
+
+So the bug was fixed.

@@ -1,0 +1,108 @@
+1.
+$ export LC_ALL='C'
+
+2. 
+$ sort /usr/share/dict/words > words
+
+3. 
+$ wget http://web.cs.ucla.edu/classes/winter18/cs35L/assign/assign2.html
+
+4. 
+$ tr -c 'A-Za-z' '[\n*]' < assign2.html
+Transform everything except letters to a new empty line
+
+$ tr -cs 'A-Za-z' '[\n*]' < assign2.html
+Doing the same things as above and delete duplicated empty lines
+
+$ tr -cs 'A-Za-z' '[\n*]' < assign2.html | sort
+Doing the same things as above and sort the output
+
+$ tr -cs 'A-Za-z' '[\n*]' < assign2.html | sort -u
+Doing the same things as above and output only one line for those 
+duplicated lines 
+
+$ tr -cs 'A-Za-z' '[\n*]' < assign2.html | sort -u | comm - words
+Doing the same things as above as well as compare the unique and common 
+elements from the standard input(the words that have been "tr" and "sort")
+with the original words. First column contains lines unique to standard 
+input, second column contains lines unique to original words file, and 
+the third column contains lines common to both files.
+
+$ tr -cs 'A-Za-z' '[\n*]' < assign2.html | sort -u | comm -23 - words
+Doing the same things as above but squeeze (delete) the second and the third
+column, just leaving the first column to show the unique 
+elements in the file from standard input
+
+5. 
+wget http://mauimapp.com/moolelo/hwnwdseng.htm
+
+===============buildwords=======================
+#!/bin/bash
+
+grep -E "<td>..*</td>" | 
+sed '1~2d' | tr [A-Z] [a-z] | 
+sed 's/<td>//g' | 
+sed 's/<\/td>//g' | 
+sed 's/<u>//g' | 
+sed 's/<\/u>//g' | 
+tr "\`" "'" | 
+sed "s/ /\n/g" | 
+sed "s/,//g" | 
+grep -E "^[pk'mnwlhaeiou]*$" | 
+sort -u | 
+sed '/^\s*$/d' 
+================================================
+
+$ chmod +x buildwords
+$ ./buildwords < hwnwdseng.htm > hwords
+
+6.
+mispelled hawwaiin words:
+Transform upper to lower, then change all non-hawaiin letters to new line, 
+then ouput all words that are not in hwords, 
+then count the lines
+
+$ tr "[:upper:]" "[:lower:]" < assign2.html | 
+tr -cs "pk\'mnwlhaeiou" '[\n*]' | sort -u | comm -23 - hwords | 
+wc -l
+
+The number I got was: 198
+
+mispelled english words:
+Transform all non-letter to new line, sort them, compared with words 
+the English dictionary, count the lines
+
+$ tr -cs "[:alpha:]" "[\n*]" < assign2.html | sort -u | 
+comm -23 - words | wc -l
+
+The number I got was: 81
+
+
+mispelled english words but correct in hawwaiin
+
+$ tr -cs "[:alpha:]" "[\n*]" < assign2.html | sort -u | 
+comm -23 - words | comm -12 - hwords
+
+I got:
+halau
+lau
+wiki
+
+
+mispelled hawaiin words but correct in english
+
+$ tr "[:upper:]" "[:lower:]" < assign2.html | 
+tr -cs "pk\'mnwlhaeiou" '[\n*]' | sort -u | 
+comm -23 - hwords | comm -12 - words
+
+I got:
+a
+ail
+ain
+ake
+al
+ale
+alen
+all
+amine
+...

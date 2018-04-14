@@ -1,0 +1,58 @@
+rm -f *.o *.tmp 1-test.ppm 2-test.ppm 4-test.ppm 8-test.ppm srt srt.tgz
+gcc -std=gnu11 -g -O2 -Wall -Wextra -Wno-unused-parameter   -c -o main.o main.c
+main.c:233:31: warning: 'gamma' is deprecated: first deprecated in macOS 10.9 [-Wdeprecated-declarations]
+            scaled_color[0] = gamma( pixel_color[0] ) * max_color;
+                              ^
+/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk/usr/include/math.h:759:15: note: 'gamma' has been explicitly marked deprecated here
+extern double gamma(double) __OSX_AVAILABLE_BUT_DEPRECATED(__MAC_10_0, __MAC_10_9, __IPHONE_NA, __IPHONE_NA);
+              ^
+main.c:234:31: warning: 'gamma' is deprecated: first deprecated in macOS 10.9 [-Wdeprecated-declarations]
+            scaled_color[1] = gamma( pixel_color[1] ) * max_color;
+                              ^
+/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk/usr/include/math.h:759:15: note: 'gamma' has been explicitly marked deprecated here
+extern double gamma(double) __OSX_AVAILABLE_BUT_DEPRECATED(__MAC_10_0, __MAC_10_9, __IPHONE_NA, __IPHONE_NA);
+              ^
+main.c:235:31: warning: 'gamma' is deprecated: first deprecated in macOS 10.9 [-Wdeprecated-declarations]
+            scaled_color[2] = gamma( pixel_color[2] ) * max_color;
+                              ^
+/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk/usr/include/math.h:759:15: note: 'gamma' has been explicitly marked deprecated here
+extern double gamma(double) __OSX_AVAILABLE_BUT_DEPRECATED(__MAC_10_0, __MAC_10_9, __IPHONE_NA, __IPHONE_NA);
+              ^
+main.c:290:27: warning: comparison of integers of different signs: 'unsigned int' and 'int' [-Wsign-compare]
+    for (index = 0; index < nthreads; ++index) {
+                    ~~~~~ ^ ~~~~~~~~
+main.c:300:27: warning: comparison of integers of different signs: 'unsigned int' and 'int' [-Wsign-compare]
+    for (index = 0; index < nthreads; ++index) {
+                    ~~~~~ ^ ~~~~~~~~
+5 warnings generated.
+gcc -std=gnu11 -g -O2 -Wall -Wextra -Wno-unused-parameter   -c -o raymath.o raymath.c
+gcc -std=gnu11 -g -O2 -Wall -Wextra -Wno-unused-parameter   -c -o shaders.o shaders.c
+gcc -std=gnu11 -g -O2 -Wall -Wextra -Wno-unused-parameter -o srt main.o raymath.o shaders.o -pthread -lm
+clang: warning: argument unused during compilation: '-pthread' [-Wunused-command-line-argument]
+time ./srt 1-test.ppm >1-test.ppm.tmp
+
+real	0m42.263s
+user	0m40.214s
+sys	0m0.332s
+mv 1-test.ppm.tmp 1-test.ppm
+time ./srt 2-test.ppm >2-test.ppm.tmp
+
+real	0m24.423s
+user	0m43.680s
+sys	0m0.348s
+mv 2-test.ppm.tmp 2-test.ppm
+time ./srt 4-test.ppm >4-test.ppm.tmp
+
+real	0m20.592s
+user	1m8.510s
+sys	0m0.253s
+mv 4-test.ppm.tmp 4-test.ppm
+time ./srt 8-test.ppm >8-test.ppm.tmp
+
+real	0m23.314s
+user	1m8.174s
+sys	0m0.448s
+mv 8-test.ppm.tmp 8-test.ppm
+for file in 1-test.ppm 2-test.ppm 4-test.ppm 8-test.ppm; do \
+	  diff -u baseline.ppm $file || exit; \
+	done

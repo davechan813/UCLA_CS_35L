@@ -1,0 +1,253 @@
+Name: Zhibang Chen
+UID: 804783490
+
+1. 
+Grab Coreutils-with-bug
+$ wget http://web.cs.ucla.edu/classes/winter18/cs35L/assign/coreutils-with-bug.tar.gz
+
+2. 
+Untar the file
+$ tar -xzf coreutils-with-bug.tar.gz
+
+3.
+Make a new directory to install the buggy version
+$ cd ..
+$ mkdir coreutils-with-bug-install
+
+Configure the package at that directory
+$ cd coreutils-with-bug
+$ ./configure --prefix=/u/eng/class/classsmj/winter18/35l/week4/coreutils-with-bug-install
+
+Then compile and install
+$ make
+
+
+In file included from utimecmp.c:41:0:
+utimens.h:2:5: error: conflicting types for 'futimens'
+ int futimens (int, char const *, struct timespec const [2]);
+     ^~~~~~~~
+In file included from utimecmp.h:25:0,
+                 from utimecmp.c:25:
+/usr/include/sys/stat.h:373:12: note: previous declaration of 'futimens' was here
+ extern int futimens (int __fd, const struct timespec __times[2]) __THROW;
+            ^~~~~~~~
+
+make[3]: *** [Makefile:659: utimecmp.o] Error 1
+make[3]: Leaving directory '/w/home.14/class/classsmj/winter18/35l/week4/coreutils-with-bug/lib'
+make[2]: *** [Makefile:414: all] Error 2
+make[2]: Leaving directory '/w/home.14/class/classsmj/winter18/35l/week4/coreutils-with-bug/lib'
+make[1]: *** [Makefile:419: all-recursive] Error 1
+make[1]: Leaving directory '/w/home.14/class/classsmj/winter18/35l/week4/coreutils-with-bug'
+make: *** [Makefile:357: all] Error 2
+
+I encountered some errors.
+
+4. 
+I downloaded the patch file using wget.
+$ wget http://web.cs.ucla.edu/classes/winter18/cs35L/assign/coreutils.diff
+
+Patch the file
+$ patch -p0 < coreutils.diff
+patching file lib/utimens.c
+patching file lib/utimens.h
+patching file src/copy.c
+patching file src/tee.c
+patching file src/touch.c
+
+And then I made again, and the problem was fixed.
+
+The reason why the patch works is that:
+Previously in /usr/include/sys/stat.h, the code declare the futimens function with 
+extern int futimens (int __fd, const struct timespec __times[2]) __THROW;
+
+In utimens.h, we declare it again with different argument patterns
+int futimens (int, char const *, struct timespec const [2]);
+
+In C, there are no overload feature, so it will report error if we try to do so.
+
+In the patch file, we changed the function name "futimens" to "coreutils_futimens",
+so that we avoid conflict and fix the error.
+
+5. 
+Then I reproduced the bug.
+
+$ tmp=$(mktemp -d)
+$ cd $tmp
+$ touch -d '1918-11-11 11:00 GMT' wwi-armistice
+$ touch now
+$ sleep 1
+$ touch now1
+$ TZ=UTC0 ~/winter18/35l/week4/coreutils-with-bug/src/ls -lt --full-time wwi-armistice now now1
+
+-rw-r--r-- 1 classsmj class 0 1918-11-11 11:00:00.000000000 +0000 wwi-armistice
+-rw-r--r-- 1 classsmj class 0 2018-02-06 19:08:38.991518607 +0000 now1
+-rw-r--r-- 1 classsmj class 0 2018-02-06 19:08:32.032329061 +0000 now
+
+6. 
+The I begin to find the bug.
+$ gdb ~/winter18/35l/week4/coreutils-with-bug/src/ls 
+(gdb) run -lt --full-time wwi-armistice now now1
+
+I first printed out all the functions information.
+(gdb) info functions
+
+File ls.c:
+...
+static int compare_atime(V, V);
+static int compare_ctime(V, V);
+...
+static int compare_mtime(V, V);
+...
+static int compstr_atime(V, V);
+static int compstr_ctime(V, V);
+...
+static int compstr_mtime(V, V);
+...
+static int rev_cmp_atime(V, V);
+static int rev_cmp_ctime(V, V);
+...
+static int rev_cmp_mtime(V, V);
+...
+
+
+There are like tens of functions and I don't know where to look at. However, because we have a sorting problem, problems my appeared at those compare time functions.
+
+
+To start, I set a breakpoint at compare_atime.
+(gdb) b compare_atime
+(gdb) run
+It just finished, so it doesn't use compare_atime
+
+Then I set a breakpoint at compare_ctime.
+(gdb) delete
+(gdb) b compare_ctime
+(gdb) run
+Again, it just finished, so it doesn't use compare_ctime
+
+Then I set a breakpoint at compare_mtime.
+(gdb) delete
+(gdb) b compare_mtime
+(gdb) run
+
+This time it used the compare_mtime:
+Starting program: /w/home.14/class/classsmj/winter18/35l/week4/coreutils-with-bug/src/ls -lt --full-time wwi-armistice now now1
+
+Breakpoint 4, compare_mtime (a=0x6171a0, b=0x617250) at ls.c:2884
+2884	static int compare_mtime (V a, V b) { return cmp_mtime (a, b, xstrcoll); }
+
+Then I set a breakpoint at cmp_mtime
+(gdb) b cmp_mtime
+
+Then step into it.
+(gdb) s
+(gdb) s
+
+timespec_cmp (b=..., a=...) at ../lib/timespec.h:48
+48	  int diff = a.tv_sec - b.tv_sec;
+
+I print out the codes of cmp_mtime
+(gdb) list cmp_mtime
+
+43	/* Return negative, zero, positive if A < B, A == B, A > B, respectively.
+44	   Assume the nanosecond components are in range, or close to it.  */
+45	static inline int
+46	timespec_cmp (struct timespec a, struct timespec b)
+47	{
+48	  int diff = a.tv_sec - b.tv_sec;
+49	  return diff ? diff : a.tv_nsec - b.tv_nsec;
+50	}
+
+
+So I guessed the problem is that when one of the file time is very old, when it is converted in an integer, it may overflow. 
+
+6. To fix it, I get rid of letting them subtract each other but directly compare them and assign 1, 0 or -1 to diff.
+
+(gdb) q
+
+Copy the file and modify it.
+
+$ cd ~/winter18/35l/week4/coreutils-with-bug/lib
+$ cp timespec.h ../../
+cd ../../
+$ vim timespec.h
+The I modified the code liek this:
+
+    int diff;
+  // int diff = a.tv_sec - b.tv_sec;
+    if (a.tv_sec < b.tv_sec)
+       diff = -1;
+    else if (a.tv_sec == b.tv_sec)
+       diff = 0;
+    else
+       diff = 1;
+  // return diff ? diff : a.tv_nsec - b.tv_nsec;
+    return diff;
+
+Then I get the patch file.
+$ cd coreutils-with-bug/lib
+$ diff -u timespec.h ../../timespec.h > patch.diff
+
+Then patch the timespec.h
+$ patch -p0 < patch.diff
+patching file timespec.h
+
+
+Then compile it agian.
+$ cd ..
+$ make
+
+To check whether it succeed
+$ echo ?
+0
+
+7. 
+To check whether the bug is fixed,
+$ cd $tmp
+$ TZ=UTC0 ~/winter18/35l/week4/coreutils-with-bug/src/ls -lt --full-time wwi-armistice now now1
+
+-rw-r--r-- 1 classsmj class 0 2018-02-09 06:52:58.982121185 +0000 now1
+-rw-r--r-- 1 classsmj class 0 2018-02-09 06:52:57.978093883 +0000 now
+-rw-r--r-- 1 classsmj class 0 1918-11-11 11:00:00.000000000 +0000 wwi-armistice
+
+So the bug is fixed.
+
+8.
+To get a changelog
+$ emacs
+(emacs) C-x 4 a
+
+2018-02-09  Zhibang Chen  <classsmj@lnxsrv07.seas.ucla.edu>
+
+  * timespec.h: Delete subtraction  between time string to avoid integer overflow.  Instead,
+        compare them directly and return -1, 0, and 1 if A < B, A == B, or A > B.
+
+Create lab4.diff in the form of a ChangeLog entry followed by a diff -u patch
+
+$ cat patch.diff >> ChangeLog
+$ cp ChangeLog ../../
+$ cd ../../
+$ mv ChangeLog lab4.diff
+
+8.
+To test on Seasnet, I returned to home directory and create the same three files.
+$ cd ~
+$ touch -d '1918-11-11 11:00 GMT' wwi-armistice
+$ touch now
+$ sleep 1
+$ touch now1
+$ TZ=UTC0 ls -lt --full-time wwi-armistice now now1
+-rw-r--r-- 1 classsmj class 0 2054-12-17 17:28:16.000000000 +0000 wwi-armistice
+-rw-r--r-- 1 classsmj class 0 2018-02-09 19:36:09.238868000 +0000 now1
+-rw-r--r-- 1 classsmj class 0 2018-02-09 19:36:03.327323000 +0000 now
+
+The reason why it becomes 2054 is that  linux system 64 bit, where int has a sign bit to see
+the time is in the past or in the future, but SEASnet uses 32 bit NFS system. So when a 64 bit int pass in, it truncates the first 32bit, so the system doesn't know it is in the future or the past.
+
+
+
+
+
+
+
+
+

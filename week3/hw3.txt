@@ -1,0 +1,31 @@
+Name: Zhibang Chen
+UID: 804783490
+
+1. 
+Go back to the code of ls.c, we can find that "case_long_iso_time_style:"
+is in a switch case.
+Even if we don't delete it, the case of "long_iso_time_style" will still
+be executed because of "case_long_iso_time_style" don't have a break in it.
+However, we need to delete it because: First, it repeated. Second, the usage
+of case with a underscore instead of a space is not right according to C++ 
+coding style. It makes the code less messy.
+
+2. 
+In the original code, when assiging value to the array of long_time_format, 
+it still involves some conditional decision. However, in the new codes, 
+we just directly assign value to it, making it to the format of date 
+in the States. It is possible that people in non-English countries 
+cannot understand and thus causing some problems.
+
+3. 
+It will get an IndexError: list index out of range, because /dev/null is like
+a trash bin for output, everything put in /dev/null just disappear. So, 
+/dev/null is a empty file. If we want to get a line by index in a empty file,
+it will get an IndexError
+
+4. 
+It gets a SyntaxError, saying 
+  except IOError as (errno, strerror):
+                      ^
+This is beacuse in python3, syntax needs to be changed to 
+'except IOError as err:'

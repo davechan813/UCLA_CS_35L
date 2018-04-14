@@ -1,0 +1,98 @@
+Name: Zhibang Chen
+UID:804783490
+
+1. $ man -k your_key_word
+
+2. $ echo $PATH: get the path of executable program: /usr/local/cs/bin 
+     /usr/bin /usr/local/bin
+   $ find /usr/local/cs/bin /usr/bin /usr/local/bin -name cp
+   $ find /usr/local/cs/bin /usr/bin /usr/local/bin -name wc
+
+3. $ which cp
+   /usr/local/cs/bin/cp
+   $ which wc
+   /usr/local/cs/bin/wc
+
+4. $ which emacs
+   got: /usr/local/cs/bin/emacs
+   cd /usr/local/cs/bin
+   ls -la
+   found that: emacs -> ../emacs-25.2/bin/emacs-25.2
+   (can also use readlink)
+
+5. $ man chmod
+   g+s means group adds the permission of "set user or group ID on execution"
+   o-x means taking away other users' permission of executing the file
+
+6. $ man find
+   find / -mtime -21
+
+7. $ man find
+   find / -mtime -21 -type d
+
+8. $ which find
+   we get /usr/bin/find
+   $ cd /usr/bin/
+   $ find /usr/bin/ -type l
+   then i copy and paste into a txt file to count
+
+9. $ man ls
+   $ cd /usr/lib
+   $ ls -la --sort=time
+   -rwxr-xr-x   1 root root   18692 Jan 26  2014 libgpg-error.so.0.10.0
+
+10. man locale
+    "locale displays the current locale settings for each locale category, 
+    based on the settings of 
+    the environment  variables  that  control  the  locale"
+	$ locale
+    LANG, LC_CTYPE, LC_NUMERIC, LC_TIME, LC_COLLATE, LC_MONETARY, LC_MESSAGES,
+    LC_PAPER, LC_NAME
+    LC_ADDRESS, LC_TELEPHONE, LC_MEASUREMENT, LC_IDENTIFICATION
+
+
+11.	$ emacs
+    C-h r
+    C-s sort
+	‘M-x sort-lines’ ‘M-x sort-paragraphs’ 
+  ‘M-x sort-pages’ ‘M-x sort-fields’
+	‘M-x sort-numeric-fields’ ‘M-x sort-columns’
+  ‘M-x rmail-sort-by-date’ 
+  ‘M-x rmail-sort-by-subject’
+	‘M-x rmail-sort-by-author’ ‘M-x rmail-sort-by-recipient’ 
+  ‘M-x rmail-sort-by-correspondent’ 
+	‘M-x rmail-sort-by-lines’ ‘M-x rmail-sort-by-labels <RET> LABELS <RET>’
+
+12. C-h ? to learn about how to get help
+    C-h k to get the document of keys
+    I found:
+	‘C-M-a’ Move to beginning of current or preceding 
+   defun (‘beginning-of-defun’).
+	‘C-M-b’ Move backward over a balanced expression (‘backward-sexp’).
+	‘C-M-c’ Exit another recursiveediting level, and so on.
+	'C-M-d' Move forward down one level of parentheses.down-list
+	'C-M-e' Move forward to next end of defun.
+	'C-M-f' Move point forward ARG words (backward if ARG is negative).
+	'C-M-h' Put point at beginning of this paragraph, mark at end.
+
+
+13. C-h k C-g
+	'C-g' signals a ‘quit’ condition.
+	During execution of Lisp code, this character causes a quit directly.
+	At top-level, as an editor command, this simply beeps.
+
+14. C-h t
+    C-s yanking
+	Reinsertion of killed text is called "yanking".  (Think of it
+	as yanking back, or pulling back, some text that was taken away.)
+	Generally, the commands that can remove a lot of text kill the text
+	(they are set up so that you can yank the text), while the commands
+	that remove just one character, or only remove blank lines and spaces,
+	do deletion (so you cannot yank that text).
+
+15. man ls
+    -l list the files with a long listing format, doesn't include 
+    files started with a dot
+    dired displays a list of files in DIRNAME, including the files 
+    started with a dot
+

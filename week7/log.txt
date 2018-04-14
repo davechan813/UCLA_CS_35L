@@ -1,0 +1,218 @@
+1. 
+	Connect my board to my mac book, connect to the wifi whose name is the id of the beaglebond
+	Then configure the board to connect to my home's wifi.
+
+2. 
+	ssh to my beaglebone as root
+	$ ssh root@192.168.8.1
+	@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+	@    WARNING: REMOTE HOST IDENTIFICATION HAS CHANGED!     @
+	@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+	IT IS POSSIBLE THAT SOMEONE IS DOING SOMETHING NASTY!
+	Someone could be eavesdropping on you right now (man-in-the-middle attack)!
+	It is also possible that a host key has just been changed.
+	The fingerprint for the ECDSA key sent by the remote host is
+	SHA256:haTf4JRtAkQpKUP3cRyVBZR3030do2TanD4LkNHTAgA.
+	Please contact your system administrator.
+	Add correct host key in /Users/czb/.ssh/known_hosts to get rid of this message.
+	Offending ECDSA key in /Users/czb/.ssh/known_hosts:12
+	ECDSA host key for 192.168.8.1 has changed and you have requested strict checking.
+	Host key verification failed.
+
+	So I use $ sudo ssh root@192.168.8.1
+	Last login: Sat Mar  3 11:45:54 2018 from 192.168.8.141
+
+3. 
+	Install all the package needed for latter use of xterm
+
+	$ apt-get install xauth
+	Reading package lists... Done
+	Building dependency tree       
+	Reading state information... Done
+	xauth is already the newest version.
+	The following packages were automatically installed and are no longer required:
+	  libaudio2 libmng1 libqt4-network libqt4-xml libqtcore4 libqtdbus4 libqtgui4 qtcore4-l10n
+	Use 'apt-get autoremove' to remove them.
+	0 upgraded, 0 newly installed, 0 to remove and 192 not upgraded.
+
+	$ apt-get install xterm
+	Reading package lists... Done
+	Building dependency tree       
+	Reading state information... Done
+	xterm is already the newest version.
+	The following packages were automatically installed and are no longer required:
+	  libaudio2 libmng1 libqt4-network libqt4-xml libqtcore4 libqtdbus4 libqtgui4 qtcore4-l10n
+	Use 'apt-get autoremove' to remove them.
+	0 upgraded, 0 newly installed, 0 to remove and 192 not upgraded.
+
+4.
+	I set a unique hostname for my partner to identify each other
+	$ hostname dave
+	$ hostname
+	dave
+
+5.
+	I connect to my home's wifi.
+	$ sudo connmanctl
+
+	connmanctl> enable wifi
+	Error wifi: Already enabled
+	
+	connmanctl> scan wifi
+	Scan completed for wifi
+	
+	connmanctl> services
+    DIRECT-447FEDC7      wifi_2cf7f1066944_4449524543542d3434374645444337_managed_psk
+    TC8717T56            wifi_2cf7f1066944_544338373137543536_managed_psk
+    come&connect_me!     wifi_2cf7f1066944_636f6d6526636f6e6e6563745f6d6521_managed_psk
+    ...
+    ...
+    George               wifi_2cf7f1066944_47656f726765_managed_psk
+
+	connmanctl> agent on
+	Agent registered
+	
+	connmanctl> connect wifi_2cf7f1066944_636f6d6526636f6e6e6563745f6d6521_managed_psk
+	Agent RequestInput wifi_2cf7f1066944_636f6d6526636f6e6e6563745f6d6521_managed_psk
+  	Passphrase = [ Type=psk, Requirement=mandatory, Alternates=[ WPS ] ]
+  	WPS = [ Type=wpspin, Requirement=alternate ]
+	Passphrase? 08030422
+	Connected wifi_2cf7f1066944_636f6d6526636f6e6e6563745f6d6521_managed_psk
+	
+	connmanctl> qiut
+
+	Then I let my partner to connect to the same WIFI I am connecting to.
+
+6. 
+	Then I ask him to run ifconfig to know the ip address he is using.
+	
+	$ ifconfig
+
+	SoftAp0   Link encap:Ethernet  HWaddr 60:64:05:19:1a:95  
+          inet addr:192.168.8.1  Bcast:192.168.8.255  Mask:255.255.255.0
+	...
+	...
+	wlan0     Link encap:Ethernet  HWaddr 2c:f7:f1:06:69:44  
+	          inet addr:192.168.0.15  Bcast:192.168.0.255  Mask:255.255.255.0
+	          inet6 addr: fe80::2ef7:f1ff:fe06:6944/64 Scope:Link
+	          inet6 addr: 2605:e000:8595:ec00:2ef7:f1ff:fe06:6944/64 Scope:Global
+	          UP BROADCAST RUNNING MULTICAST DYNAMIC  MTU:1500  Metric:1
+	          RX packets:62 errors:0 dropped:0 overruns:0 frame:0
+	          TX packets:126 errors:0 dropped:0 overruns:0 carrier:0
+	          collisions:0 txqueuelen:1000 
+	          RX bytes:10847 (10.5 KiB)  TX bytes:24364 (23.7 KiB)
+	So the ip address is 192.168.0.15
+
+7.
+	SSH into the root of my partner's board
+	$ ssh root@192.168.0.13
+	...
+	...
+	Last login: Sun Mar  4 00:14:35 2018 from 192.168.8.120
+	root@bob:~# 
+
+	It succeed and I logout
+	$ exit
+	logout
+	Connection to 192.168.0.13 closed.
+
+8.
+	Then I created a new user and password for my partner to log on to my board
+	$ useradd guestbob
+	$ passwd guestbob
+	Enter new UNIX password: 
+	Retype new UNIX password: 
+	passwd: password updated successfully
+
+8.
+	I also need to create a new hom direcotry for my partner
+	$ mkdir /home/guestbob
+
+	Then change the owner of the home directory
+	$ chown guestbob /home/guestbob
+
+	I also ask my partner to do the same thing so that I can log on his board
+
+9.
+	I then logged into my partner's board as a guest.
+	$ ssh guest_dave@192.168.0.13
+	Last login: Sat Mar  3 11:42:10 2018 from 192.168.3.104
+	$ 
+
+	It succeed and I logout
+	$ exit
+	logout
+	Connection to 192.168.0.13 closed.
+
+10.
+	To ssh login without password, I first generate the public/private key pair
+	$ ssh-keygen
+	Generating public/private rsa key pair.
+	Enter file in which to save the key (/root/.ssh/id_rsa): 
+	/root/.ssh/id_rsa already exists.
+	Overwrite (y/n)? y
+	Enter passphrase (empty for no passphrase): 
+	Enter same passphrase again: 
+	Your identification has been saved in /root/.ssh/id_rsa.
+	Your public key has been saved in /root/.ssh/id_rsa.pub.
+	The key fingerprint is:
+	d4:02:4c:27:30:47:7e:ee:a7:35:f9:a7:bc:cb:24:e7 root@dave
+	The key's randomart image is:
+	+---[RSA 2048]----+
+	|    o=* .        |
+	|     +.+ .       |
+	|      . + .      |
+	|       + .       |
+	|        S        |
+	|       .   .     |
+	|        . * o    |
+	|         + X  .  |
+	|        .   E=   |
+	+-----------------+
+
+	Then I copied the public key to my partner's server
+	$ ssh-copy-id guest_dave@192.168.0.13
+	/usr/bin/ssh-copy-id: INFO: attempting to log in with the new key(s), to filter out any that are already installed
+	/usr/bin/ssh-copy-id: INFO: 1 key(s) remain to be installed -- if you are prompted now it is to install the new keys
+	Debian GNU/Linux 8
+
+	BeagleBoard.org Debian Image 2016-06-14
+
+	Support/FAQ: http://elinux.org/Beagleboard:BeagleBoneBlack_Debian
+
+	default username:password is [debian:temppwd]
+
+	guest_dave@192.168.0.13's password: 
+
+	Number of key(s) added: 1
+
+	Now try logging into the machine, with:   "ssh 'guest_dave@192.168.0.13'"
+	and check to make sure that only the key(s) you wanted were added.
+
+	Then I used the ssh agent to remember the private key for me
+	$ eval `ssh-agent`
+	Agent pid 6329
+
+	$ ssh-add
+	Identity added: /root/.ssh/id_rsa (rsa w/o comment)
+
+10.
+	Then I tried to log in to my partner's board 
+	$ ssh guest_dave@192.168.0.13
+	...
+	...
+	Last login: Sun Mar  4 00:32:46 2018 from 192.168.0.15
+
+	This time it doesn't ask me for the password.
+
+11.
+	Then I logout to my own board and relog-in with -X option to enable xterm
+	$ ssh -X root@192.168.8.1
+
+	Then I login to my partner's board with -X option
+	$ ssh -X guest_dave@192.168.0.13
+
+	Then I invoked xterm
+	$ xterm
+
+	And everything works fine.

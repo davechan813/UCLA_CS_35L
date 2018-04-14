@@ -1,0 +1,80 @@
+Name: Zhibang Chen
+UID: 804783490
+
+1.
+check version
+$ which sort
+/usr/local/cs/bin/sort
+
+$ sort --version
+sort (GNU coreutils) 8.29
+
+The version is correct
+
+2.
+Generate a file containing 10,000,000 random single-precision floating point numbers, in textual form, one per line with no white space.
+
+od -t f4 /dev/urandom | sed 's/.......//' | tr " " "\n" | sed '/^\s*$/d' | head -10000000 > input.txt
+
+3. 
+time the command sort -g on that data
+$ time -p sort -g input.txt > /dev/null
+real 19.10
+user 101.78
+sys 0.43
+
+4. 
+Assuming your PATH environment variable is set properly so that /usr/local/cs/bin is at its start
+$ echo $PATH
+/usr/local/cs/bin:/usr/lib64/qt-3.3/bin:/u/eng/class/classsmj/perl5/bin:/usr/local/bin:/usr/bin:/usr/X11R6/bin:/u/eng/class/classsmj/bin
+
+Time sort with parallel=1
+$ time -p sort -g --parallel=1 input.txt > /dev/null
+real 91.20
+user 91.01
+sys 0.17
+
+Time sort with parallel=2
+$ time -p sort -g --parallel=2 input.txt > /dev/null
+real 50.46
+user 95.74
+sys 0.26
+
+Time sort with parallel=4
+$ time -p sort -g --parallel=4 input.txt > /dev/null
+real 29.24
+user 99.89
+sys 0.30
+
+Time sort with parallel=8
+$ time -p sort -g --parallel=8 input.txt > /dev/null
+real 18.58
+user 101.63
+sys 0.39
+
+
+5. 
+Conclusion:
+The system-provided sort and the sort with parallel=8 have similar 
+run time (because both use multi-threads). Also, time decreases as 
+number of threads increases.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

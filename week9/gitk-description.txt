@@ -1,0 +1,10 @@
+Name: Zhibang Chen
+UID: 804783490
+
+The upper window shows us three columns: a GUI interface of each branch and merge, the authors and emails, and the date.
+
+In the middle session, we can see the commit ID of each commit. We can also search for certain commits
+
+In the lower left window, we can see the diff of this version versus older or newer version. In the text area, we can see author email and their description about this merge.
+
+In the lower right window, we can see the comment of patch or tree of this merge.

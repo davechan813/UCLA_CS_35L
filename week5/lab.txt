@@ -1,0 +1,123 @@
+UID: 804783490
+Name: Zhibang Chen
+
+1. write program tr2b.c.
+First, I got the from and to operands from the arguments list. If there are not enough arguments,
+I exit and print out error. Also, when the operands are not of same length, I exit and print out 
+error. Then I wrote a function to check for duplicate character. Finally, I used getchar() to read for character.
+
+2. write program tr2u.c
+It is bascially same as above, the only difference is that it needs to use a int to store the return 
+value of read and write so that the program can determine whether these process are successful.
+
+3. compile two programs.
+	gcc -std=c99 -o tr2b tr2b.c
+	gcc -std=c99 -o tr2u tr2u.c
+
+4. then I used strace to compare tr2b and tr2c.
+To get a big file, I wrote a C program to print "abc" for 2000000 times. Then, store all the 
+"abc" into a file called input.txt.
+
+(a) copying one file to another
+	strace -c ./tr2b 'ab' 'xx' < input.txt > output_b
+
+% time     seconds  usecs/call     calls    errors syscall
+------ ----------- ----------- --------- --------- ----------------
+  0.00    0.000000           0        76           read
+  0.00    0.000000           0        74           write
+  0.00    0.000000           0         2           open
+  0.00    0.000000           0         2           close
+  0.00    0.000000           0         4           fstat
+  0.00    0.000000           0         9           mmap
+  0.00    0.000000           0         4           mprotect
+  0.00    0.000000           0         1           munmap
+  0.00    0.000000           0         1           brk
+  0.00    0.000000           0         1         1 access
+  0.00    0.000000           0         1           execve
+  0.00    0.000000           0         1           arch_prctl
+------ ----------- ----------- --------- --------- ----------------
+100.00    0.000000                   176         1 total
+
+
+	strace -c ./tr2u 'ab' 'xx' < input.txt > output_u
+% time     seconds  usecs/call     calls    errors syscall
+------ ----------- ----------- --------- --------- ----------------
+ 54.81    2.562572           4    600001           write
+ 45.19    2.113017           4    600003           read
+  0.00    0.000000           0         2           open
+  0.00    0.000000           0         2           close
+  0.00    0.000000           0         2           fstat
+  0.00    0.000000           0         7           mmap
+  0.00    0.000000           0         4           mprotect
+  0.00    0.000000           0         1           munmap
+  0.00    0.000000           0         1           brk
+  0.00    0.000000           0         1         1 access
+  0.00    0.000000           0         1           execve
+  0.00    0.000000           0         1           arch_prctl
+------ ----------- ----------- --------- --------- ----------------
+100.00    4.675589               1200026         1 total
+
+
+Comparing the number of system calls required by each program, we see that tr2b
+used 176 system calls, while tr2u used 1200026 times. We can see that using library 
+functions highly reduced the using times systems calls.
+
+
+(b) copying a file to the terminal
+	strace -c ./tr2b 'ab' 'xx' < input.txt
+% time     seconds  usecs/call     calls    errors syscall
+------ ----------- ----------- --------- --------- ----------------
+ 96.70    0.001640           0      5860           write
+  3.30    0.000056           1        94           read
+  0.00    0.000000           0         2           open
+  0.00    0.000000           0         2           close
+  0.00    0.000000           0         4           fstat
+  0.00    0.000000           0        10           mmap
+  0.00    0.000000           0         4           mprotect
+  0.00    0.000000           0         1           munmap
+  0.00    0.000000           0         1           brk
+  0.00    0.000000           0         1         1 access
+  0.00    0.000000           0         1           execve
+  0.00    0.000000           0         1           arch_prctl
+------ ----------- ----------- --------- --------- ----------------
+100.00    0.001696                  5981         1 total	
+
+
+	strace -c ./tr2u 'ab' 'xx' < input.txt
+% time     seconds  usecs/call     calls    errors syscall
+------ ----------- ----------- --------- --------- ----------------
+ 54.94    0.558406           0   6000000           write
+ 45.06    0.458000           0   6000002           read
+  0.00    0.000000           0         2           open
+  0.00    0.000000           0         2           close
+  0.00    0.000000           0         2           fstat
+  0.00    0.000000           0         8           mmap
+  0.00    0.000000           0         4           mprotect
+  0.00    0.000000           0         1           munmap
+  0.00    0.000000           0         1           brk
+  0.00    0.000000           0         1         1 access
+  0.00    0.000000           0         1           execve
+  0.00    0.000000           0         1           arch_prctl
+------ ----------- ----------- --------- --------- ----------------
+100.00    1.016406              12000025         1 total
+
+
+Just as above, tr2b uses 5981 system calls while tr2u uses 12000025 which is much more than 
+the previous one. What's more, when printing to the terminal, it uses much more system call 
+than the above example.
+
+5. Test time
+
+time ./tr2b 'ab' 'xx' < input.txt > output_b
+
+real	0m0.335s
+user	0m0.274s
+sys		0m0.009s
+
+
+time ./tr2u 'abc' 'xyz' < input.txt > output_u
+real	0m6.432s
+user	0m0.466s
+sys		0m5.917s
+
+
